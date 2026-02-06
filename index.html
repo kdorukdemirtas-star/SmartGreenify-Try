@@ -1,0 +1,2030 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartGreenify - İnteraktif Sera Simülasyonu</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0a4d3c;
+            --primary-light: #1a7a5e;
+            --primary-dark: #063528;
+            --accent: #f4a261;
+            --accent-bright: #ff8c42;
+            --bg: #EAE8DD;
+            --card-bg: #fdfcf9;
+            --text: #0a4d3c;
+            --text-dim: #3a6d5a;
+            --danger: #c1440e;
+            --success: #0a4d3c;
+            --warning: #e76f51;
+            --soil: #8b7355;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            padding: 3rem 0 4rem;
+            position: relative;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            margin-bottom: 1rem;
+            color: var(--primary);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            color: var(--text-dim);
+            font-size: 1.3rem;
+            font-weight: 300;
+        }
+
+        .time-display {
+            font-family: 'Space Mono', monospace;
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin-top: 1rem;
+            padding: 1rem 2rem;
+            background: var(--card-bg);
+            border-radius: 15px;
+            display: inline-block;
+            box-shadow: 0 4px 12px rgba(10, 77, 60, 0.1);
+        }
+
+        /* Game Controls */
+        .game-controls {
+            background: var(--card-bg);
+            border-radius: 25px;
+            padding: 2.5rem;
+            margin-bottom: 3rem;
+            border: 2px solid var(--primary);
+            box-shadow: 0 8px 24px rgba(10, 77, 60, 0.15);
+        }
+
+        .controls-header {
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin-bottom: 2rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .control-row {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            background: rgba(10, 77, 60, 0.05);
+            padding: 1.5rem;
+            border-radius: 15px;
+        }
+
+        .control-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 1rem;
+            color: var(--primary);
+            min-width: 160px;
+            font-weight: 600;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: var(--bg);
+            border: none;
+            padding: 1rem 2.5rem;
+            border-radius: 12px;
+            font-family: 'Space Mono', monospace;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(10, 77, 60, 0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(10, 77, 60, 0.3);
+            background: var(--primary-light);
+        }
+
+        .btn:active {
+            transform: translateY(-1px);
+        }
+
+        .btn-reset {
+            background: var(--danger);
+        }
+
+        .btn-reset:hover {
+            background: #a33a0c;
+        }
+
+        .btn-auto {
+            background: var(--success);
+        }
+
+        .btn-auto.active {
+            background: var(--accent-bright);
+            animation: pulse-btn 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-btn {
+            0%, 100% { box-shadow: 0 4px 12px rgba(255, 140, 66, 0.4); }
+            50% { box-shadow: 0 4px 20px rgba(255, 140, 66, 0.6); }
+        }
+
+        .btn-speed {
+            background: var(--accent);
+            padding: 0.8rem 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .btn-speed:hover {
+            background: var(--accent-bright);
+        }
+
+        .slider {
+            flex: 1;
+            min-width: 250px;
+            -webkit-appearance: none;
+            height: 10px;
+            border-radius: 5px;
+            background: rgba(10, 77, 60, 0.15);
+            outline: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(10, 77, 60, 0.3);
+        }
+
+        .slider::-webkit-slider-thumb:hover {
+            transform: scale(1.3);
+            box-shadow: 0 4px 12px rgba(10, 77, 60, 0.4);
+        }
+
+        .slider-value {
+            font-family: 'Space Mono', monospace;
+            color: var(--success);
+            min-width: 90px;
+            text-align: right;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        /* Greenhouse Grid */
+        .greenhouse-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        @media (max-width: 1200px) {
+            .greenhouse-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .greenhouse-container {
+            background: var(--card-bg);
+            border-radius: 25px;
+            padding: 2.5rem;
+            border: 3px solid var(--primary);
+            position: relative;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 24px rgba(10, 77, 60, 0.15);
+        }
+
+        .greenhouse-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 32px rgba(10, 77, 60, 0.25);
+        }
+
+        .greenhouse-container.smart {
+            border-color: var(--accent-bright);
+        }
+
+        .greenhouse-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .greenhouse-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .greenhouse-badge {
+            padding: 0.6rem 1.5rem;
+            border-radius: 25px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 700;
+        }
+
+        .badge-traditional {
+            background: rgba(139, 115, 85, 0.2);
+            color: var(--soil);
+            border: 2px solid var(--soil);
+        }
+
+        .badge-smart {
+            background: rgba(255, 140, 66, 0.2);
+            color: var(--accent-bright);
+            border: 2px solid var(--accent-bright);
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 5px rgba(255, 140, 66, 0.3); }
+            50% { box-shadow: 0 0 15px rgba(255, 140, 66, 0.6); }
+        }
+
+        /* Greenhouse Visualization */
+        .greenhouse-visual {
+            position: relative;
+            height: 500px;
+            background: linear-gradient(180deg, rgba(26, 122, 94, 0.08) 0%, rgba(10, 77, 60, 0.15) 100%);
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+            border: 2px solid rgba(10, 77, 60, 0.2);
+        }
+
+        .greenhouse-structure {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+
+        .greenhouse-roof {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 45%;
+            background: linear-gradient(180deg, rgba(10, 77, 60, 0.1) 0%, transparent 100%);
+            clip-path: polygon(5% 100%, 50% 5%, 95% 100%);
+            border: 2px solid rgba(10, 77, 60, 0.3);
+        }
+
+        .greenhouse-walls {
+            position: absolute;
+            bottom: 0;
+            left: 5%;
+            right: 5%;
+            height: 60%;
+            border-left: 2px solid rgba(10, 77, 60, 0.3);
+            border-right: 2px solid rgba(10, 77, 60, 0.3);
+        }
+
+        /* Sky effects */
+        .sky-effect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 40%;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        .sun {
+            position: absolute;
+            top: 15%;
+            right: 15%;
+            width: 50px;
+            height: 50px;
+            background: radial-gradient(circle, #ffd700 0%, #ff8c42 100%);
+            border-radius: 50%;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.6);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .cloud {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            animation: drift 20s linear infinite;
+        }
+
+        @keyframes drift {
+            from { transform: translateX(-100px); }
+            to { transform: translateX(calc(100% + 100px)); }
+        }
+
+        /* Plant Container */
+        .plant-container {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 2rem;
+            align-items: flex-end;
+        }
+
+        .plant {
+            width: 80px;
+            transition: all 0.5s ease;
+            position: relative;
+        }
+
+        .plant-stem {
+            width: 10px;
+            background: linear-gradient(180deg, #1a7a5e 0%, #0a4d3c 100%);
+            margin: 0 auto;
+            border-radius: 5px 5px 0 0;
+            transition: all 0.5s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .plant-leaves {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+        }
+
+        .plant-leaf {
+            width: 40px;
+            height: 40px;
+            background: radial-gradient(circle, #06d6a0 0%, #1a7a5e 100%);
+            border-radius: 50% 0;
+            margin: -8px auto;
+            transition: all 0.5s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            position: relative;
+        }
+
+        .plant-leaf::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 2px;
+            height: 60%;
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .plant-leaf:nth-child(2) {
+            transform: rotate(120deg);
+        }
+
+        .plant-leaf:nth-child(3) {
+            transform: rotate(240deg);
+        }
+
+        .plant.healthy .plant-stem {
+            height: 100px;
+        }
+
+        .plant.healthy .plant-leaf {
+            width: 45px;
+            height: 45px;
+            opacity: 1;
+            animation: sway 3s ease-in-out infinite;
+        }
+
+        @keyframes sway {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(5deg); }
+        }
+
+        .plant.stressed .plant-stem {
+            height: 60px;
+            background: linear-gradient(180deg, #8b8b8b 0%, #5a5a5a 100%);
+        }
+
+        .plant.stressed .plant-leaf {
+            width: 30px;
+            height: 30px;
+            background: radial-gradient(circle, #e76f51 0%, #c1440e 100%);
+            opacity: 0.7;
+        }
+
+        .plant.dying .plant-stem {
+            height: 30px;
+            background: linear-gradient(180deg, #c1440e 0%, #8b0000 100%);
+        }
+
+        .plant.dying .plant-leaf {
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle, #c1440e 0%, #8b0000 100%);
+            opacity: 0.4;
+            animation: wilt 1s ease-in-out infinite;
+        }
+
+        @keyframes wilt {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(-20deg); }
+        }
+
+        /* Environmental Indicators */
+        .env-indicators {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .env-indicator {
+            background: var(--card-bg);
+            padding: 0.8rem 1.2rem;
+            border-radius: 12px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            box-shadow: 0 2px 8px rgba(10, 77, 60, 0.15);
+            border: 1px solid var(--primary);
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .indicator-icon {
+            font-size: 1.4rem;
+        }
+
+        /* Soil Moisture Bar */
+        .soil-section {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: linear-gradient(180deg, transparent 0%, var(--soil) 100%);
+            border-radius: 0 0 20px 20px;
+        }
+
+        .soil-moisture {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            right: 15px;
+            height: 40px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid rgba(10, 77, 60, 0.4);
+        }
+
+        .moisture-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #06d6a0 0%, #1a7a5e 100%);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: white;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .moisture-fill.low {
+            background: linear-gradient(90deg, #c1440e 0%, #8b0000 100%);
+            animation: pulse-danger 1s ease-in-out infinite;
+        }
+
+        @keyframes pulse-danger {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .moisture-fill.medium {
+            background: linear-gradient(90deg, #e76f51 0%, #c1440e 100%);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(10, 77, 60, 0.05);
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+            border: 2px solid rgba(10, 77, 60, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(10, 77, 60, 0.2);
+        }
+
+        .stat-value {
+            font-family: 'Space Mono', monospace;
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--primary);
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+        }
+
+        /* ML Prediction Panel */
+        .ml-panel {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-top: 2rem;
+            border: 2px solid var(--accent-bright);
+            box-shadow: 0 4px 16px rgba(255, 140, 66, 0.2);
+        }
+
+        .ml-title {
+            font-size: 1.3rem;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .prediction-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .prediction-card {
+            background: rgba(10, 77, 60, 0.05);
+            padding: 1.2rem;
+            border-radius: 12px;
+            border-left: 4px solid var(--accent-bright);
+        }
+
+        .prediction-label {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .prediction-value {
+            font-family: 'Space Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        /* Comparison Panel */
+        .comparison-panel {
+            background: var(--card-bg);
+            border-radius: 25px;
+            padding: 3rem;
+            margin-top: 3rem;
+            border: 3px solid var(--primary);
+            box-shadow: 0 8px 24px rgba(10, 77, 60, 0.15);
+        }
+
+        .comparison-title {
+            font-size: 2.2rem;
+            margin-bottom: 3rem;
+            text-align: center;
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2.5rem;
+        }
+
+        .comparison-card {
+            background: rgba(10, 77, 60, 0.05);
+            padding: 2rem;
+            border-radius: 18px;
+            border: 2px solid rgba(10, 77, 60, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .comparison-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(10, 77, 60, 0.2);
+        }
+
+        .comparison-metric {
+            font-size: 1rem;
+            color: var(--text-dim);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .comparison-values {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .comparison-value {
+            font-family: 'Space Mono', monospace;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .value-traditional {
+            color: var(--soil);
+        }
+
+        .value-smart {
+            color: var(--success);
+        }
+
+        .comparison-bar {
+            height: 12px;
+            background: rgba(10, 77, 60, 0.1);
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .bar-segment {
+            height: 100%;
+            position: absolute;
+            top: 0;
+            transition: all 0.5s ease;
+        }
+
+        .bar-traditional {
+            background: var(--soil);
+            left: 0;
+        }
+
+        .bar-smart {
+            background: var(--success);
+            right: 0;
+        }
+
+        .comparison-footer {
+            margin-top: 1rem;
+            text-align: center;
+            font-family: 'Space Mono', monospace;
+            color: var(--accent-bright);
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        /* Alert System */
+        .alert-container {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            z-index: 1000;
+            max-width: 400px;
+        }
+
+        .alert {
+            background: var(--card-bg);
+            border-left: 4px solid var(--success);
+            border-radius: 12px;
+            padding: 1.2rem 1.8rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 16px rgba(10, 77, 60, 0.25);
+            animation: slideIn 0.3s ease-out;
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            border: 2px solid rgba(10, 77, 60, 0.2);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(450px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .alert.warning {
+            border-left-color: var(--warning);
+        }
+
+        .alert.danger {
+            border-left-color: var(--danger);
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .alert-icon {
+            font-size: 1.8rem;
+        }
+
+        .alert-content {
+            flex: 1;
+        }
+
+        .alert-title {
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+            color: var(--primary);
+        }
+
+        .alert-message {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+        }
+
+        /* Water Drop Animation */
+        @keyframes dropWater {
+            0% {
+                transform: translateY(-100px);
+                opacity: 0;
+            }
+            30% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(350px);
+                opacity: 0;
+            }
+        }
+
+        .water-drop {
+            position: absolute;
+            width: 12px;
+            height: 18px;
+            background: radial-gradient(circle, rgba(6, 214, 160, 0.8) 0%, rgba(26, 122, 94, 0.6) 100%);
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(45deg);
+            animation: dropWater 1.5s ease-in;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Progress Ring */
+        .progress-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .progress-ring__circle {
+            transition: stroke-dashoffset 0.5s ease;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+    </style>
+</head>
+<body>
+    <!-- Alert Container -->
+    <div class="alert-container" id="alertContainer"></div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <header>
+            <h1>🌱 SmartGreenify Simülasyon Laboratuvarı</h1>
+            <p class="subtitle">Geleneksel vs ML Destekli Akıllı Sera - Canlı Karşılaştırma</p>
+            <div class="time-display" id="timeDisplay">
+                Simülasyon Süresi: <span id="simTime">0 saat 0 dakika</span>
+            </div>
+        </header>
+
+        <!-- Game Controls -->
+        <div class="game-controls">
+            <div class="controls-header">
+                🎮 Çevresel Kontroller
+            </div>
+            
+            <div class="control-row">
+                <span class="control-label">🌡️ Dış Sıcaklık:</span>
+                <input type="range" class="slider" id="tempSlider" min="10" max="40" value="22" step="0.5">
+                <span class="slider-value" id="tempValue">22°C</span>
+            </div>
+            
+            <div class="control-row">
+                <span class="control-label">☀️ Güneş Işığı:</span>
+                <input type="range" class="slider" id="lightSlider" min="0" max="100" value="70">
+                <span class="slider-value" id="lightValue">70%</span>
+            </div>
+            
+            <div class="control-row">
+                <span class="control-label">💧 Hava Nemi:</span>
+                <input type="range" class="slider" id="humiditySlider" min="20" max="95" value="60">
+                <span class="slider-value" id="humidityValue">60%</span>
+            </div>
+
+            <div class="control-row">
+                <span class="control-label">⏱️ Simülasyon Hızı:</span>
+                <button class="btn btn-speed" data-speed="1">1x</button>
+                <button class="btn btn-speed" data-speed="2">2x</button>
+                <button class="btn btn-speed" data-speed="5" style="background: var(--primary);">5x</button>
+                <button class="btn btn-speed" data-speed="10">10x</button>
+                <button class="btn btn-speed" data-speed="20">20x</button>
+            </div>
+            
+            <div class="control-row">
+                <button class="btn btn-auto" id="autoMode">🤖 Otomatik Mod: KAPALI</button>
+                <button class="btn" id="waterTraditional">💧 Manuel Sulama (Geleneksel)</button>
+                <button class="btn btn-reset" id="resetBtn">🔄 Sıfırla</button>
+            </div>
+        </div>
+
+        <!-- Greenhouse Grid -->
+        <div class="greenhouse-grid">
+            <!-- Traditional Greenhouse -->
+            <div class="greenhouse-container traditional">
+                <div class="greenhouse-header">
+                    <h2 class="greenhouse-title">🏡 Geleneksel Sera</h2>
+                    <span class="greenhouse-badge badge-traditional">Manuel Kontrol</span>
+                </div>
+
+                <div class="greenhouse-visual" id="traditionalVisual">
+                    <div class="greenhouse-structure">
+                        <div class="greenhouse-roof"></div>
+                        <div class="greenhouse-walls"></div>
+                    </div>
+                    
+                    <div class="sky-effect" id="traditionalSky">
+                        <div class="sun"></div>
+                    </div>
+                    
+                    <div class="env-indicators">
+                        <div class="env-indicator">
+                            <span class="indicator-icon">🌡️</span>
+                            <span id="traditionalTemp">22°C</span>
+                        </div>
+                        <div class="env-indicator">
+                            <span class="indicator-icon">💧</span>
+                            <span id="traditionalHumidity">60%</span>
+                        </div>
+                        <div class="env-indicator">
+                            <span class="indicator-icon">☀️</span>
+                            <span id="traditionalLight">70%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="plant-container" id="traditionalPlants">
+                        <div class="plant healthy">
+                            <div class="plant-leaves">
+                                <div class="plant-leaf"></div>
+                                <div class="plant-leaf"></div>
+                                <div class="plant-leaf"></div>
+                            </div>
+                            <div class="plant-stem"></div>
+                        </div>
+                        <div class="plant healthy">
+                            <div class="plant-leaves">
+                                <div class="plant-leaf"></div>
+                                <div class="plant-leaf"></div>
+                                <div class="plant-leaf"></div>
+                            </div>
+                            <div class="plant-stem"></div>
+                        </div>
+                        <div class="plant healthy">
+                            <div class="plant-leaves">
+                                <div class="plant-leaf"></div>
+                                <div class="plant-leaf"></div>
+                                <div class="plant-leaf"></div>
+                            </div>
+                            <div class="plant-stem"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="soil-section">
+                        <div class="soil-moisture">
+                            <div class="moisture-fill" id="traditionalMoisture" style="width: 60%">60%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-value" id="traditionalWater">0.0L</span>
+                        <span class="stat-label">Su Kullanımı</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value" id="traditionalWaterings">0</span>
+                        <span class="stat-label">Sulama Sayısı</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value" id="traditionalHealth">100%</span>
+                        <span class="stat-label">Bitki Sağlığı</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value" id="traditionalEfficiency">0%</span>
+                        <span class="stat-label">Verimlilik</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Smart Greenhouse -->
+            <div class="greenhouse-container smart">
+                <div class="greenhouse-header">
+                    <h2 class="greenhouse-title">🌱 SmartGreenify</h2>
+                    <span class="greenhouse-badge badge-smart">ML Destekli</span>
+                </div>
+
+                <div class="greenhouse-visual" id="smartVisual">
+                    <div class="greenhouse-structure">
+                        <div class="greenhouse-roof"></div>
+                        <div class="greenhouse-walls"></div>
+                    </div>
+                    
+                    <div class="sky-effect" id="smartSky">
+                        <div class="sun"></div>
+                    </div>
+                    
+                    <div class="env-indicators">
+                        <div class="env-indicator">
+                            <span class="indicator-icon">🌡️</span>
+                            <span id="smartTemp">22°C</span>
+                        </div>
+                        <div class="env-indicator">
+                            <span class="indicator-icon">💧</span>
+                            <span id="smartHumidity">60%</span>
+                        </div>
+                        <div class="env-indicator">
+                            <span class="indicator-icon">☀️</span>
+                            <span id="smartLight">70%</span>
+                        </div>
+                        <div class="env-indicator" style="background: rgba(255, 140, 66, 0.2); border-color: var(--accent-bright);">
+                            <span class="indicator-icon">🤖</span>
+                            <span id="smartStatus">İzleniyor</span>
+                        </div>
+                    </div>
+                    
+                    <div class="plant-container" id="smartPlants">
+                        <div class="plant healthy">
+                            <div class="plant-leaves">
+                                <div class="plant-leaf"></div>
+                                <div class="plant-leaf"></div>
+                                <div class="plant-leaf"></div>
+                            </div>
+                            <div class="plant-stem"></div>
+                        </div>
+                        <div class="plant healthy">
+                            <div class="plant-leaves">
+                                <div class="plant-leaf"></div>
+                                <div class="plant-leaf"></div>
+                                <div class="plant-leaf"></div>
+                            </div>
+                            <div class="plant-stem"></div>
+                        </div>
+                        <div class="plant healthy">
+                            <div class="plant-leaves">
+                                <div class="plant-leaf"></div>
+                                <div class="plant-leaf"></div>
+                                <div class="plant-leaf"></div>
+                            </div>
+                            <div class="plant-stem"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="soil-section">
+                        <div class="soil-moisture">
+                            <div class="moisture-fill" id="smartMoisture" style="width: 60%">60%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-value" id="smartWater">0.0L</span>
+                        <span class="stat-label">Su Kullanımı</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value" id="smartWaterings">0</span>
+                        <span class="stat-label">Sulama Sayısı</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value" id="smartHealth">100%</span>
+                        <span class="stat-label">Bitki Sağlığı</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value" id="smartEfficiency">0%</span>
+                        <span class="stat-label">Verimlilik</span>
+                    </div>
+                </div>
+
+                <!-- ML Prediction Panel -->
+                <div class="ml-panel">
+                    <div class="ml-title">🧠 AI Tahmin Motoru</div>
+                    <div class="prediction-grid">
+                        <div class="prediction-card">
+                            <div class="prediction-label">Sonraki Sulama</div>
+                            <div class="prediction-value" id="nextWatering">--</div>
+                        </div>
+                        <div class="prediction-card">
+                            <div class="prediction-label">Tahmin Doğruluğu</div>
+                            <div class="prediction-value" id="mlAccuracy">0%</div>
+                        </div>
+                        <div class="prediction-card">
+                            <div class="prediction-label">Model R² Skoru</div>
+                            <div class="prediction-value" id="r2Score">0.847</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comparison Panel -->
+        <div class="comparison-panel">
+            <h3 class="comparison-title">📊 Canlı Performans Karşılaştırması</h3>
+            
+            <!-- Live Charts Section -->
+            <div style="background: rgba(10, 77, 60, 0.05); padding: 2rem; border-radius: 20px; margin-bottom: 3rem;">
+                <h4 style="color: var(--primary); font-size: 1.5rem; margin-bottom: 2rem; text-align: center;">📈 Zaman İçinde Değişim</h4>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem;">
+                    <!-- Soil Moisture Chart -->
+                    <div style="background: var(--card-bg); padding: 1.5rem; border-radius: 15px; border: 2px solid var(--primary);">
+                        <div style="font-weight: 600; margin-bottom: 1rem; color: var(--primary);">💧 Toprak Nemi Trendi</div>
+                        <canvas id="moistureChart" width="400" height="200"></canvas>
+                    </div>
+                    
+                    <!-- Plant Health Chart -->
+                    <div style="background: var(--card-bg); padding: 1.5rem; border-radius: 15px; border: 2px solid var(--primary);">
+                        <div style="font-weight: 600; margin-bottom: 1rem; color: var(--primary);">🌿 Bitki Sağlığı Trendi</div>
+                        <canvas id="healthChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="comparison-grid">
+                <div class="comparison-card">
+                    <div class="comparison-metric">💧 Su Tüketimi</div>
+                    <div class="comparison-values">
+                        <span class="comparison-value value-traditional" id="compWaterTrad">0L</span>
+                        <span style="color: var(--text-dim); font-size: 1.2rem;">vs</span>
+                        <span class="comparison-value value-smart" id="compWaterSmart">0L</span>
+                    </div>
+                    <div class="comparison-bar">
+                        <div class="bar-segment bar-traditional" id="barWaterTrad" style="width: 50%"></div>
+                        <div class="bar-segment bar-smart" id="barWaterSmart" style="width: 50%"></div>
+                    </div>
+                    <div class="comparison-footer">
+                        ↓ <span id="waterSavings">0%</span> tasarruf
+                    </div>
+                </div>
+
+                <div class="comparison-card">
+                    <div class="comparison-metric">🔄 Sulama Verimliliği</div>
+                    <div class="comparison-values">
+                        <span class="comparison-value value-traditional" id="compCountTrad">0</span>
+                        <span style="color: var(--text-dim); font-size: 1.2rem;">vs</span>
+                        <span class="comparison-value value-smart" id="compCountSmart">0</span>
+                    </div>
+                    <div class="comparison-bar">
+                        <div class="bar-segment bar-traditional" id="barCountTrad" style="width: 50%"></div>
+                        <div class="bar-segment bar-smart" id="barCountSmart" style="width: 50%"></div>
+                    </div>
+                    <div class="comparison-footer">
+                        ↓ <span id="efficiencyDiff">0</span> daha az sulama
+                    </div>
+                </div>
+
+                <div class="comparison-card">
+                    <div class="comparison-metric">🌿 Bitki Sağlığı</div>
+                    <div class="comparison-values">
+                        <span class="comparison-value value-traditional" id="compHealthTrad">100%</span>
+                        <span style="color: var(--text-dim); font-size: 1.2rem;">vs</span>
+                        <span class="comparison-value value-smart" id="compHealthSmart">100%</span>
+                    </div>
+                    <div class="comparison-bar">
+                        <div class="bar-segment bar-traditional" id="barHealthTrad" style="width: 50%"></div>
+                        <div class="bar-segment bar-smart" id="barHealthSmart" style="width: 50%"></div>
+                    </div>
+                    <div class="comparison-footer">
+                        <span id="healthDiff">+0%</span> fark
+                    </div>
+                </div>
+
+                <div class="comparison-card">
+                    <div class="comparison-metric">⚡ Genel Verimlilik</div>
+                    <div class="comparison-values">
+                        <span class="comparison-value value-traditional" id="compEffTrad">0%</span>
+                        <span style="color: var(--text-dim); font-size: 1.2rem;">vs</span>
+                        <span class="comparison-value value-smart" id="compEffSmart">0%</span>
+                    </div>
+                    <div class="comparison-bar">
+                        <div class="bar-segment bar-traditional" id="barEffTrad" style="width: 50%"></div>
+                        <div class="bar-segment bar-smart" id="barEffSmart" style="width: 50%"></div>
+                    </div>
+                    <div class="comparison-footer">
+                        SmartGreenify Üstünlüğü
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Chart History Data
+        const chartData = {
+            traditional: {
+                moisture: [],
+                health: [],
+                times: []
+            },
+            smart: {
+                moisture: [],
+                health: [],
+                times: []
+            },
+            maxPoints: 50
+        };
+
+        // Canvas Charts
+        let moistureChart = null;
+        let healthChart = null;
+
+        function initCharts() {
+            // Moisture Chart
+            const moistureCanvas = document.getElementById('moistureChart');
+            const moistureCtx = moistureCanvas.getContext('2d');
+            
+            // Health Chart
+            const healthCanvas = document.getElementById('healthChart');
+            const healthCtx = healthCanvas.getContext('2d');
+            
+            moistureChart = { canvas: moistureCanvas, ctx: moistureCtx };
+            healthChart = { canvas: healthCanvas, ctx: healthCtx };
+        }
+
+        function drawChart(chart, tradData, smartData, label, unit, color1, color2) {
+            const ctx = chart.ctx;
+            const canvas = chart.canvas;
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, width, height);
+            
+            // Background
+            ctx.fillStyle = '#f8f9fa';
+            ctx.fillRect(0, 0, width, height);
+            
+            // Grid
+            ctx.strokeStyle = 'rgba(10, 77, 60, 0.1)';
+            ctx.lineWidth = 1;
+            
+            for (let i = 0; i <= 5; i++) {
+                const y = (height / 5) * i;
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(width, y);
+                ctx.stroke();
+                
+                // Y-axis labels
+                ctx.fillStyle = '#3a6d5a';
+                ctx.font = '11px Space Mono';
+                ctx.textAlign = 'left';
+                ctx.fillText(`${100 - (i * 20)}${unit}`, 5, y - 5);
+            }
+            
+            if (tradData.length === 0) return;
+            
+            // Draw lines
+            const drawLine = (data, color, label) => {
+                if (data.length < 2) return;
+                
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                
+                const xStep = width / (chartData.maxPoints - 1);
+                const startIndex = Math.max(0, data.length - chartData.maxPoints);
+                
+                for (let i = 0; i < Math.min(data.length, chartData.maxPoints); i++) {
+                    const value = data[startIndex + i];
+                    const x = i * xStep;
+                    const y = height - (value / 100 * height);
+                    
+                    if (i === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+                
+                ctx.stroke();
+                
+                // Draw dots
+                ctx.fillStyle = color;
+                for (let i = 0; i < Math.min(data.length, chartData.maxPoints); i++) {
+                    const value = data[startIndex + i];
+                    const x = i * xStep;
+                    const y = height - (value / 100 * height);
+                    
+                    ctx.beginPath();
+                    ctx.arc(x, y, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            };
+            
+            drawLine(tradData, color1, 'Geleneksel');
+            drawLine(smartData, color2, 'SmartGreenify');
+            
+            // Legend
+            const legendY = height - 10;
+            
+            ctx.fillStyle = color1;
+            ctx.fillRect(10, legendY, 15, 3);
+            ctx.fillStyle = '#3a6d5a';
+            ctx.font = 'bold 11px Space Mono';
+            ctx.textAlign = 'left';
+            ctx.fillText('Geleneksel', 30, legendY + 3);
+            
+            ctx.fillStyle = color2;
+            ctx.fillRect(140, legendY, 15, 3);
+            ctx.fillStyle = '#3a6d5a';
+            ctx.fillText('SmartGreenify', 160, legendY + 3);
+        }
+
+        function updateCharts() {
+            if (!moistureChart || !healthChart) return;
+            
+            // Add current data
+            chartData.traditional.moisture.push(gameState.traditional.soilMoisture);
+            chartData.traditional.health.push(gameState.traditional.plantHealth);
+            chartData.smart.moisture.push(gameState.smart.soilMoisture);
+            chartData.smart.health.push(gameState.smart.plantHealth);
+            
+            // Keep only last maxPoints
+            if (chartData.traditional.moisture.length > chartData.maxPoints) {
+                chartData.traditional.moisture.shift();
+                chartData.traditional.health.shift();
+                chartData.smart.moisture.shift();
+                chartData.smart.health.shift();
+            }
+            
+            // Draw charts
+            drawChart(
+                moistureChart,
+                chartData.traditional.moisture,
+                chartData.smart.moisture,
+                'Toprak Nemi',
+                '%',
+                '#8b7355',
+                '#0a4d3c'
+            );
+            
+            drawChart(
+                healthChart,
+                chartData.traditional.health,
+                chartData.smart.health,
+                'Bitki Sağlığı',
+                '%',
+                '#c1440e',
+                '#06d6a0'
+            );
+        }
+
+        function resetCharts() {
+            chartData.traditional.moisture = [];
+            chartData.traditional.health = [];
+            chartData.smart.moisture = [];
+            chartData.smart.health = [];
+            
+            if (moistureChart && healthChart) {
+                updateCharts();
+            }
+        }
+
+        // Game State
+        const gameState = {
+            traditional: {
+                soilMoisture: 60,
+                waterUsed: 0,
+                wateringCount: 0,
+                plantHealth: 100,
+                lastWatering: Date.now(),
+                wateringHistory: []
+            },
+            smart: {
+                soilMoisture: 60,
+                waterUsed: 0,
+                wateringCount: 0,
+                plantHealth: 100,
+                lastWatering: Date.now(),
+                autoMode: false,
+                wateringHistory: [],
+                predictions: [],
+                correctPredictions: 0
+            },
+            environment: {
+                temperature: 22,
+                light: 70,
+                humidity: 60
+            },
+            time: 0,
+            speed: 5,
+            paused: false
+        };
+
+        // DOM Elements
+        const elements = {
+            tempSlider: document.getElementById('tempSlider'),
+            lightSlider: document.getElementById('lightSlider'),
+            humiditySlider: document.getElementById('humiditySlider'),
+            tempValue: document.getElementById('tempValue'),
+            lightValue: document.getElementById('lightValue'),
+            humidityValue: document.getElementById('humidityValue'),
+            autoModeBtn: document.getElementById('autoMode'),
+            waterTraditionalBtn: document.getElementById('waterTraditional'),
+            resetBtn: document.getElementById('resetBtn'),
+            alertContainer: document.getElementById('alertContainer'),
+            simTime: document.getElementById('simTime')
+        };
+
+        // Event Listeners
+        elements.tempSlider.addEventListener('input', (e) => {
+            gameState.environment.temperature = parseFloat(e.target.value);
+            elements.tempValue.textContent = `${e.target.value}°C`;
+            updateEnvironmentDisplay();
+        });
+
+        elements.lightSlider.addEventListener('input', (e) => {
+            gameState.environment.light = parseInt(e.target.value);
+            elements.lightValue.textContent = `${e.target.value}%`;
+            updateEnvironmentDisplay();
+        });
+
+        elements.humiditySlider.addEventListener('input', (e) => {
+            gameState.environment.humidity = parseInt(e.target.value);
+            elements.humidityValue.textContent = `${e.target.value}%`;
+            updateEnvironmentDisplay();
+        });
+
+        // Speed controls
+        document.querySelectorAll('.btn-speed').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.btn-speed').forEach(b => {
+                    b.style.background = 'var(--accent)';
+                });
+                e.target.style.background = 'var(--primary)';
+                gameState.speed = parseFloat(e.target.dataset.speed);
+                showAlert('Sistem', `Simülasyon hızı ${gameState.speed}x olarak ayarlandı.`, 'success');
+            });
+        });
+
+        elements.autoModeBtn.addEventListener('click', () => {
+            gameState.smart.autoMode = !gameState.smart.autoMode;
+            if (gameState.smart.autoMode) {
+                elements.autoModeBtn.textContent = '🤖 Otomatik Mod: AÇIK';
+                elements.autoModeBtn.classList.add('active');
+                showAlert('SmartGreenify AI', 'Makine öğrenmesi modeli aktif. Optimal sulama başladı.', 'success');
+            } else {
+                elements.autoModeBtn.textContent = '🤖 Otomatik Mod: KAPALI';
+                elements.autoModeBtn.classList.remove('active');
+                showAlert('SmartGreenify AI', 'Otomatik mod devre dışı bırakıldı.', 'warning');
+            }
+        });
+
+        elements.waterTraditionalBtn.addEventListener('click', () => {
+            waterPlants('traditional', true);
+        });
+
+        elements.resetBtn.addEventListener('click', () => {
+            resetGame();
+        });
+
+        // Update Environment Display
+        function updateEnvironmentDisplay() {
+            const temp = gameState.environment.temperature;
+            const light = gameState.environment.light;
+            
+            // Update both greenhouses
+            ['traditional', 'smart'].forEach(type => {
+                document.getElementById(`${type}Temp`).textContent = `${temp}°C`;
+                document.getElementById(`${type}Humidity`).textContent = `${gameState.environment.humidity}%`;
+                document.getElementById(`${type}Light`).textContent = `${light}%`;
+                
+                // Update sun visibility
+                const sky = document.getElementById(`${type}Sky`);
+                sky.style.opacity = light / 100;
+            });
+        }
+
+        // Water Plants Function
+        function waterPlants(type, isManual = false) {
+            const waterAmount = type === 'smart' ? 0.12 : 0.20; // Smart system uses 40% less water
+            const moistureIncrease = type === 'smart' ? 12 : 15;
+            
+            if (type === 'traditional') {
+                const currentMoisture = gameState.traditional.soilMoisture;
+                const timeSinceLastWatering = (Date.now() - gameState.traditional.lastWatering) / 1000;
+                
+                // Check for overwatering
+                let overwatered = false;
+                if (currentMoisture > 70) {
+                    overwatered = true;
+                    // Immediate health damage from overwatering
+                    gameState.traditional.plantHealth = Math.max(0, gameState.traditional.plantHealth - 8);
+                    showAlert('⚠️ Geleneksel Sera', 'AŞIRI SULAMA! Toprak çok ıslak. Kök çürümesi riski! (-8% sağlık)', 'danger');
+                } else if (currentMoisture > 60 && timeSinceLastWatering < 120) {
+                    overwatered = true;
+                    gameState.traditional.plantHealth = Math.max(0, gameState.traditional.plantHealth - 4);
+                    showAlert('⚠️ Geleneksel Sera', 'Çok erken sulama! Toprak hala ıslak. (-4% sağlık)', 'warning');
+                }
+                
+                gameState.traditional.soilMoisture = Math.min(100, gameState.traditional.soilMoisture + moistureIncrease);
+                gameState.traditional.waterUsed += waterAmount;
+                gameState.traditional.wateringCount++;
+                gameState.traditional.lastWatering = Date.now();
+                gameState.traditional.wateringHistory.push({
+                    time: gameState.time,
+                    moisture: gameState.traditional.soilMoisture,
+                    overwatered: overwatered
+                });
+                createWaterAnimation('traditionalVisual');
+                
+                if (!overwatered) {
+                    showAlert('Geleneksel Sera', `${isManual ? 'Manuel' : 'Otomatik'} sulama yapıldı. ${waterAmount.toFixed(2)}L su kullanıldı.`, 'success');
+                }
+            } else if (type === 'smart') {
+                const currentMoisture = gameState.smart.soilMoisture;
+                const timeSinceLastWatering = (Date.now() - gameState.smart.lastWatering) / 1000;
+                
+                // Smart system is less likely to overwater, but still possible
+                let overwatered = false;
+                if (currentMoisture > 75) {
+                    overwatered = true;
+                    gameState.smart.plantHealth = Math.max(0, gameState.smart.plantHealth - 5);
+                    showAlert('⚠️ SmartGreenify', 'Sensör uyarısı: Toprak çok ıslak! Sulama iptal edilmeliydi. (-5% sağlık)', 'warning');
+                } else if (currentMoisture > 65 && timeSinceLastWatering < 90) {
+                    overwatered = true;
+                    gameState.smart.plantHealth = Math.max(0, gameState.smart.plantHealth - 2);
+                    showAlert('SmartGreenify AI', 'AI uyarısı: Erken sulama tespit edildi. (-2% sağlık)', 'warning');
+                }
+                
+                gameState.smart.soilMoisture = Math.min(100, gameState.smart.soilMoisture + moistureIncrease);
+                gameState.smart.waterUsed += waterAmount;
+                gameState.smart.wateringCount++;
+                gameState.smart.lastWatering = Date.now();
+                gameState.smart.wateringHistory.push({
+                    time: gameState.time,
+                    moisture: gameState.smart.soilMoisture,
+                    overwatered: overwatered
+                });
+                createWaterAnimation('smartVisual');
+                
+                // Check prediction accuracy
+                if (gameState.smart.predictions.length > 0) {
+                    const lastPrediction = gameState.smart.predictions[gameState.smart.predictions.length - 1];
+                    const timeDiff = Math.abs(gameState.time - lastPrediction.time);
+                    if (timeDiff < 60) { // Within 60 seconds
+                        gameState.smart.correctPredictions++;
+                    }
+                }
+                
+                if (!overwatered) {
+                    showAlert('SmartGreenify AI', `ML modeliyle optimal sulama. Sadece ${waterAmount.toFixed(2)}L su kullanıldı. 💡`, 'success');
+                }
+            }
+            
+            updateUI();
+        }
+
+        // Create Water Animation
+        function createWaterAnimation(containerId) {
+            const container = document.getElementById(containerId);
+            for (let i = 0; i < 8; i++) {
+                setTimeout(() => {
+                    const drop = document.createElement('div');
+                    drop.className = 'water-drop';
+                    drop.style.left = `${25 + Math.random() * 50}%`;
+                    drop.style.top = '8%';
+                    container.appendChild(drop);
+                    setTimeout(() => drop.remove(), 1500);
+                }, i * 80);
+            }
+        }
+
+        // Show Alert
+        function showAlert(title, message, type = 'success') {
+            const alert = document.createElement('div');
+            alert.className = `alert ${type}`;
+            
+            const icons = {
+                success: '✓',
+                warning: '⚠',
+                danger: '✗'
+            };
+            
+            alert.innerHTML = `
+                <div class="alert-icon">${icons[type] || '•'}</div>
+                <div class="alert-content">
+                    <div class="alert-title">${title}</div>
+                    <div class="alert-message">${message}</div>
+                </div>
+            `;
+            
+            elements.alertContainer.appendChild(alert);
+            setTimeout(() => {
+                alert.style.opacity = '0';
+                setTimeout(() => alert.remove(), 300);
+            }, 4000);
+        }
+
+        // Calculate Moisture Decay Rate
+        function getMoistureDecayRate() {
+            const temp = gameState.environment.temperature;
+            const light = gameState.environment.light;
+            const humidity = gameState.environment.humidity;
+            
+            // Base decay: 1.2% per second (increased from 0.4%)
+            let decay = 1.2;
+            
+            // Temperature effect (exponential above 25°C)
+            if (temp > 25) {
+                decay += Math.pow((temp - 25) / 10, 1.5) * 0.8;
+            } else if (temp < 18) {
+                decay -= (18 - temp) * 0.08;
+            }
+            
+            // Light effect (photosynthesis increases water uptake)
+            decay += (light / 100) * 0.7;
+            
+            // Humidity effect (inverse relationship)
+            decay -= (humidity / 100) * 0.4;
+            
+            return Math.max(0.2, decay);
+        }
+
+        // Smart AI Decision (Enhanced ML Simulation)
+        function smartAIDecision() {
+            if (!gameState.smart.autoMode) return;
+            
+            const moisture = gameState.smart.soilMoisture;
+            const temp = gameState.environment.temperature;
+            const humidity = gameState.environment.humidity;
+            const light = gameState.environment.light;
+            const timeSinceLastWatering = (Date.now() - gameState.smart.lastWatering) / 1000;
+            
+            // CRITICAL: Prevent overwatering
+            if (moisture > 65) {
+                // Never water if moisture is already high
+                return;
+            }
+            
+            if (moisture > 55 && timeSinceLastWatering < 100) {
+                // Don't water too soon after last watering
+                return;
+            }
+            
+            // Simulate ML model prediction
+            const decayRate = getMoistureDecayRate();
+            
+            // Multi-step ahead prediction (next 5 minutes)
+            const predictedMoisture = moisture - (decayRate * 300);
+            
+            // Calculate optimal watering score
+            let wateringScore = 0;
+            
+            // Critical moisture level
+            if (moisture < 45) wateringScore += 50;
+            else if (moisture < 55) wateringScore += 30;
+            
+            // Predicted future moisture
+            if (predictedMoisture < 40) wateringScore += 40;
+            
+            // Time of day preference (night watering is better)
+            const hour = new Date().getHours();
+            if (hour >= 22 || hour <= 6) wateringScore += 20;
+            else if (hour >= 12 && hour <= 16) wateringScore -= 30; // Avoid midday
+            
+            // Temperature consideration
+            if (temp > 28) wateringScore += 15;
+            
+            // Light consideration (avoid watering in bright light)
+            if (light < 30) wateringScore += 15;
+            
+            // High humidity means less watering needed
+            if (humidity > 70) wateringScore -= 20;
+            
+            // Time since last watering - prevent too frequent watering
+            if (timeSinceLastWatering < 60) wateringScore -= 50;
+            else if (timeSinceLastWatering < 120) wateringScore -= 25;
+            
+            // Decision threshold: 60
+            const shouldWater = wateringScore > 60;
+            
+            if (shouldWater) {
+                // Store prediction
+                gameState.smart.predictions.push({
+                    time: gameState.time,
+                    score: wateringScore,
+                    moisture: moisture
+                });
+                
+                waterPlants('smart');
+                
+                // Update next watering prediction
+                updateMLPredictions();
+            }
+        }
+
+        // Update ML Predictions Display
+        function updateMLPredictions() {
+            const moisture = gameState.smart.soilMoisture;
+            const decayRate = getMoistureDecayRate();
+            
+            // Estimate when moisture will reach 45%
+            const timeToThreshold = (moisture - 45) / decayRate;
+            const minutesToWatering = Math.max(0, Math.floor(timeToThreshold / 60));
+            
+            document.getElementById('nextWatering').textContent = 
+                minutesToWatering > 0 ? `~${minutesToWatering} dk` : 'Yakında';
+            
+            // Calculate accuracy
+            const accuracy = gameState.smart.wateringCount > 0 
+                ? (gameState.smart.correctPredictions / gameState.smart.wateringCount * 100).toFixed(1)
+                : 0;
+            document.getElementById('mlAccuracy').textContent = `${accuracy}%`;
+        }
+
+        // Update Plant Health
+        function updatePlantHealth() {
+            // Traditional greenhouse
+            const tradMoisture = gameState.traditional.soilMoisture;
+            const temp = gameState.environment.temperature;
+            
+            // Severe damage from very low moisture
+            if (tradMoisture < 25) {
+                gameState.traditional.plantHealth = Math.max(0, gameState.traditional.plantHealth - 5);
+            } else if (tradMoisture < 40) {
+                gameState.traditional.plantHealth = Math.max(0, gameState.traditional.plantHealth - 2.5);
+            } 
+            // OVERWATERING DAMAGE - continuous high moisture causes root rot
+            else if (tradMoisture > 85) {
+                gameState.traditional.plantHealth = Math.max(0, gameState.traditional.plantHealth - 3);
+            } else if (tradMoisture > 75) {
+                gameState.traditional.plantHealth = Math.max(0, gameState.traditional.plantHealth - 1.5);
+            }
+            // Optimal range - plants recover
+            else if (tradMoisture >= 50 && tradMoisture <= 70) {
+                gameState.traditional.plantHealth = Math.min(100, gameState.traditional.plantHealth + 0.8);
+            }
+            
+            // Temperature stress
+            if (temp > 32 || temp < 15) {
+                gameState.traditional.plantHealth = Math.max(0, gameState.traditional.plantHealth - 1);
+            }
+            
+            // Smart greenhouse (better regulation)
+            const smartMoisture = gameState.smart.soilMoisture;
+            
+            // Smart system suffers less from extremes due to better monitoring
+            if (smartMoisture < 25) {
+                gameState.smart.plantHealth = Math.max(0, gameState.smart.plantHealth - 4);
+            } else if (smartMoisture < 40) {
+                gameState.smart.plantHealth = Math.max(0, gameState.smart.plantHealth - 1.5);
+            } 
+            // OVERWATERING DAMAGE - but less severe than traditional
+            else if (smartMoisture > 85) {
+                gameState.smart.plantHealth = Math.max(0, gameState.smart.plantHealth - 2);
+            } else if (smartMoisture > 75) {
+                gameState.smart.plantHealth = Math.max(0, gameState.smart.plantHealth - 1);
+            }
+            // Optimal range - better recovery than traditional
+            else if (smartMoisture >= 45 && smartMoisture <= 65) {
+                gameState.smart.plantHealth = Math.min(100, gameState.smart.plantHealth + 1.2);
+            }
+            
+            // AI-controlled temperature regulation (simulation)
+            if (gameState.smart.autoMode && (temp > 30 || temp < 16)) {
+                gameState.smart.plantHealth = Math.min(100, gameState.smart.plantHealth + 0.5);
+            }
+            
+            // Update plant visuals
+            updatePlantVisuals('traditional', gameState.traditional.plantHealth);
+            updatePlantVisuals('smart', gameState.smart.plantHealth);
+        }
+
+        // Update Plant Visuals
+        function updatePlantVisuals(type, health) {
+            const plants = document.querySelectorAll(`#${type}Plants .plant`);
+            plants.forEach(plant => {
+                plant.className = 'plant';
+                if (health > 75) {
+                    plant.classList.add('healthy');
+                } else if (health > 45) {
+                    plant.classList.add('stressed');
+                } else {
+                    plant.classList.add('dying');
+                }
+            });
+        }
+
+        // Calculate Efficiency
+        function calculateEfficiency(type) {
+            const data = gameState[type];
+            if (data.wateringCount === 0) return 0;
+            
+            // Efficiency = (Plant Health * Water Saved) / Waterings
+            const waterEfficiency = data.waterUsed > 0 ? (1 - data.waterUsed / 5) * 100 : 100;
+            const healthFactor = data.plantHealth;
+            const wateringEfficiency = Math.max(0, 100 - data.wateringCount * 2);
+            
+            return ((waterEfficiency + healthFactor + wateringEfficiency) / 3).toFixed(1);
+        }
+
+        // Update UI
+        function updateUI() {
+            const trad = gameState.traditional;
+            const smart = gameState.smart;
+            
+            // Update time display
+            const hours = Math.floor(gameState.time / 3600);
+            const minutes = Math.floor((gameState.time % 3600) / 60);
+            elements.simTime.textContent = `${hours} saat ${minutes} dakika`;
+            
+            // Traditional Greenhouse
+            updateMoistureBar('traditionalMoisture', trad.soilMoisture);
+            document.getElementById('traditionalWater').textContent = `${trad.waterUsed.toFixed(2)}L`;
+            document.getElementById('traditionalWaterings').textContent = trad.wateringCount;
+            document.getElementById('traditionalHealth').textContent = `${Math.round(trad.plantHealth)}%`;
+            document.getElementById('traditionalEfficiency').textContent = `${calculateEfficiency('traditional')}%`;
+            
+            // Smart Greenhouse
+            updateMoistureBar('smartMoisture', smart.soilMoisture);
+            document.getElementById('smartWater').textContent = `${smart.waterUsed.toFixed(2)}L`;
+            document.getElementById('smartWaterings').textContent = smart.wateringCount;
+            document.getElementById('smartHealth').textContent = `${Math.round(smart.plantHealth)}%`;
+            document.getElementById('smartEfficiency').textContent = `${calculateEfficiency('smart')}%`;
+            document.getElementById('smartStatus').textContent = smart.autoMode ? '🟢 Aktif' : '🟡 Beklemede';
+            
+            // Update ML predictions
+            if (smart.autoMode) {
+                updateMLPredictions();
+            }
+            
+            // Comparison Panel
+            updateComparison();
+        }
+
+        // Update Moisture Bar
+        function updateMoistureBar(id, moisture) {
+            const bar = document.getElementById(id);
+            bar.style.width = `${moisture}%`;
+            bar.textContent = `${Math.round(moisture)}%`;
+            bar.className = 'moisture-fill';
+            
+            if (moisture < 30) {
+                bar.classList.add('low');
+            } else if (moisture < 50) {
+                bar.classList.add('medium');
+            }
+        }
+
+        // Update Comparison Panel
+        function updateComparison() {
+            const trad = gameState.traditional;
+            const smart = gameState.smart;
+            
+            // Water Usage
+            document.getElementById('compWaterTrad').textContent = `${trad.waterUsed.toFixed(2)}L`;
+            document.getElementById('compWaterSmart').textContent = `${smart.waterUsed.toFixed(2)}L`;
+            
+            const totalWater = trad.waterUsed + smart.waterUsed || 0.01;
+            const tradWaterPercent = (trad.waterUsed / totalWater) * 100;
+            const smartWaterPercent = (smart.waterUsed / totalWater) * 100;
+            
+            document.getElementById('barWaterTrad').style.width = `${tradWaterPercent}%`;
+            document.getElementById('barWaterSmart').style.width = `${smartWaterPercent}%`;
+            
+            const savings = trad.waterUsed > 0 ? ((trad.waterUsed - smart.waterUsed) / trad.waterUsed * 100) : 0;
+            document.getElementById('waterSavings').textContent = `${Math.max(0, savings).toFixed(1)}%`;
+            
+            // Watering Count
+            document.getElementById('compCountTrad').textContent = trad.wateringCount;
+            document.getElementById('compCountSmart').textContent = smart.wateringCount;
+            
+            const totalCount = trad.wateringCount + smart.wateringCount || 1;
+            document.getElementById('barCountTrad').style.width = `${(trad.wateringCount / totalCount * 100)}%`;
+            document.getElementById('barCountSmart').style.width = `${(smart.wateringCount / totalCount * 100)}%`;
+            document.getElementById('efficiencyDiff').textContent = Math.abs(trad.wateringCount - smart.wateringCount);
+            
+            // Plant Health
+            document.getElementById('compHealthTrad').textContent = `${Math.round(trad.plantHealth)}%`;
+            document.getElementById('compHealthSmart').textContent = `${Math.round(smart.plantHealth)}%`;
+            
+            document.getElementById('barHealthTrad').style.width = `${trad.plantHealth}%`;
+            document.getElementById('barHealthSmart').style.width = `${smart.plantHealth}%`;
+            
+            const healthDiff = smart.plantHealth - trad.plantHealth;
+            document.getElementById('healthDiff').textContent = `${healthDiff >= 0 ? '+' : ''}${healthDiff.toFixed(1)}%`;
+            
+            // Overall Efficiency
+            const tradEff = parseFloat(calculateEfficiency('traditional'));
+            const smartEff = parseFloat(calculateEfficiency('smart'));
+            
+            document.getElementById('compEffTrad').textContent = `${tradEff}%`;
+            document.getElementById('compEffSmart').textContent = `${smartEff}%`;
+            
+            const totalEff = tradEff + smartEff || 1;
+            document.getElementById('barEffTrad').style.width = `${(tradEff / totalEff * 100)}%`;
+            document.getElementById('barEffSmart').style.width = `${(smartEff / totalEff * 100)}%`;
+        }
+
+        // Reset Game
+        function resetGame() {
+            // Reset traditional greenhouse
+            gameState.traditional = {
+                soilMoisture: 60,
+                waterUsed: 0,
+                wateringCount: 0,
+                plantHealth: 100,
+                lastWatering: Date.now(),
+                wateringHistory: []
+            };
+            
+            // Reset smart greenhouse
+            gameState.smart = {
+                soilMoisture: 60,
+                waterUsed: 0,
+                wateringCount: 0,
+                plantHealth: 100,
+                lastWatering: Date.now(),
+                autoMode: false,
+                wateringHistory: [],
+                predictions: [],
+                correctPredictions: 0
+            };
+            
+            // Reset time
+            gameState.time = 0;
+            
+            // Reset environment to defaults
+            gameState.environment = {
+                temperature: 22,
+                light: 70,
+                humidity: 60
+            };
+            
+            // Reset UI sliders
+            elements.tempSlider.value = 22;
+            elements.lightSlider.value = 70;
+            elements.humiditySlider.value = 60;
+            elements.tempValue.textContent = '22°C';
+            elements.lightValue.textContent = '70%';
+            elements.humidityValue.textContent = '60%';
+            
+            // Reset auto mode button
+            elements.autoModeBtn.textContent = '🤖 Otomatik Mod: KAPALI';
+            elements.autoModeBtn.classList.remove('active');
+            
+            // Reset charts
+            resetCharts();
+            
+            // Update all displays
+            updateEnvironmentDisplay();
+            updateUI();
+            
+            showAlert('🔄 Sistem Sıfırlandı', 'Simülasyon baştan başlıyor. İyi şanslar!', 'success');
+        }
+
+        // Game Loop
+        let lastUpdate = Date.now();
+        let chartUpdateCounter = 0;
+        
+        setInterval(() => {
+            const now = Date.now();
+            const delta = (now - lastUpdate) / 1000 * gameState.speed;
+            lastUpdate = now;
+            
+            gameState.time += delta;
+            
+            // Decay soil moisture
+            const decayRate = getMoistureDecayRate();
+            gameState.traditional.soilMoisture = Math.max(0, gameState.traditional.soilMoisture - (decayRate * delta / 10));
+            gameState.smart.soilMoisture = Math.max(0, gameState.smart.soilMoisture - (decayRate * delta / 10));
+            
+            // Smart AI decision (check every 1 second in game time)
+            if (Math.floor(gameState.time) % 1 === 0 && gameState.time > 0) {
+                smartAIDecision();
+            }
+            
+            // Update plant health
+            updatePlantHealth();
+            
+            // Update UI
+            updateUI();
+            
+            // Update charts every 2 seconds (for performance)
+            chartUpdateCounter++;
+            if (chartUpdateCounter >= 20) {
+                updateCharts();
+                chartUpdateCounter = 0;
+            }
+            
+            // Critical warnings
+            if (gameState.traditional.soilMoisture < 30 && Math.floor(gameState.time) % 30 === 0) {
+                showAlert('⚠️ Geleneksel Sera', 'Kritik! Toprak nemi %30\'un altında. Acil sulama gerekli!', 'danger');
+            }
+            
+            if (gameState.smart.soilMoisture < 30 && !gameState.smart.autoMode && Math.floor(gameState.time) % 30 === 0) {
+                showAlert('⚠️ SmartGreenify', 'Otomatik modu açmanız önerilir. Toprak nemi düşük.', 'warning');
+            }
+        }, 100);
+
+        // Initial setup
+        updateEnvironmentDisplay();
+        updateUI();
+        
+        // Initialize charts after page load
+        window.addEventListener('load', () => {
+            initCharts();
+            updateCharts();
+        });
+        
+        showAlert('🌱 Hoş Geldiniz', 'Simülasyon başladı. SmartGreenify\'ın gücünü keşfedin!', 'success');
+    </script>
+</body>
+</html>
